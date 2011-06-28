@@ -1,0 +1,17 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(E487B10D-2CC9-46c5-A5D3-D2072D0BEBAE),
+	dual,
+	nonextensible,
+	helpstring("IAVControl Interface"),
+	pointer_default(unique)
+]
+interface IAVControl : IDispatch{
+    [id(1), helpstring("method Init")] HRESULT Init(BSTR);
+    [id(2), helpstring("method SetUserNames")] HRESULT SetUserName(BSTR);
+    [id(3), helpstring("method Call")] HRESULT Call(BSTR);
+    [id(4), helpstring("method Hangup")] HRESULT Hangup();
+};

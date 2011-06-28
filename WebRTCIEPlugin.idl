@@ -1,0 +1,64 @@
+// WebRTCIEPlugin.idl : IDL source for WebRTCIEPlugin
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (WebRTCIEPlugin.tlb) and marshalling code.
+
+#include "olectl.h"
+import "oaidl.idl";
+import "ocidl.idl";
+import "..\common\inc\IAVControl.idl";
+
+[
+	object,
+	uuid(AFAA14CD-7323-44B4-85BF-2D419F1F11CE),
+	dual,
+	nonextensible,
+	helpstring("IWebRTCAVControl Interface"),
+	pointer_default(unique)
+]
+interface IWebRTCAVControl : IAVControl{
+	[propput, bindable, requestedit, id(DISPID_BACKCOLOR)]
+	HRESULT BackColor([in]OLE_COLOR clr);
+	[propget, bindable, requestedit, id(DISPID_BACKCOLOR)]
+	HRESULT BackColor([out,retval]OLE_COLOR* pclr);
+	[propput, bindable, requestedit, id(DISPID_BORDERCOLOR)]
+	HRESULT BorderColor([in]OLE_COLOR clr);
+	[propget, bindable, requestedit, id(DISPID_BORDERCOLOR)]
+	HRESULT BorderColor([out, retval]OLE_COLOR* pclr);
+	[propput, bindable, requestedit, id(DISPID_CAPTION)]
+	HRESULT Caption([in]BSTR strCaption);
+	[propget, bindable, requestedit, id(DISPID_CAPTION)]
+	HRESULT Caption([out,retval]BSTR* pstrCaption);
+    HRESULT OnSignalingMessage();
+    HRESULT OnSignedIn();
+};
+
+[
+	uuid(1EC55E7B-500F-4B26-9AFC-14BC7184DBDF),
+	version(1.0),
+	helpstring("WebRTCIEPlugin 1.0 Type Library")
+]
+library WebRTCIEPluginLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(40B04756-99A7-44EB-B2E2-922B36326720),
+		helpstring("_IWebRTCAVControlEvents Interface")
+	]
+	dispinterface _IWebRTCAVControlEvents
+	{
+		properties:
+		methods:
+	};
+	[
+		uuid(CBE1073D-939A-4CCD-9745-F3EE4E6F9328),
+		control,
+		helpstring("WebRTCAVControl Class")
+	]
+	coclass WebRTCAVControl
+	{
+		[default] interface IWebRTCAVControl;
+		[default, source] dispinterface _IWebRTCAVControlEvents;
+	};
+};

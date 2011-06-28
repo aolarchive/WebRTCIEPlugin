@@ -1,0 +1,36 @@
+HKCR
+{
+	WebRTCIEPlugin.WebRTCAVControl.1 = s 'WebRTCAVControl Class'
+	{
+		CLSID = s '{CBE1073D-939A-4CCD-9745-F3EE4E6F9328}'
+		'Insertable'
+	}
+	WebRTCIEPlugin.WebRTCAVControl = s 'WebRTCAVControl Class'
+	{
+		CLSID = s '{CBE1073D-939A-4CCD-9745-F3EE4E6F9328}'
+		CurVer = s 'WebRTCIEPlugin.WebRTCAVControl.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {CBE1073D-939A-4CCD-9745-F3EE4E6F9328} = s 'WebRTCAVControl Class'
+		{
+			ProgID = s 'WebRTCIEPlugin.WebRTCAVControl.1'
+			VersionIndependentProgID = s 'WebRTCIEPlugin.WebRTCAVControl'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			val AppID = s '%APPID%'
+			ForceRemove 'Control'
+			ForceRemove 'Insertable'
+			ForceRemove 'ToolboxBitmap32' = s '%MODULE%, 102'
+			'MiscStatus' = s '0'
+			{
+			    '1' = s '%OLEMISC%'
+			}
+			'TypeLib' = s '{1EC55E7B-500F-4B26-9AFC-14BC7184DBDF}'
+			'Version' = s '1.0'
+		}
+	}
+}
