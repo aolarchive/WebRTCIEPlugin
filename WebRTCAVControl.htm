@@ -1,0 +1,41 @@
+<html>
+<head>
+    <!--<title>ATL 8.0 test page for object WebMVideoControl</title>-->
+
+    <script type="text/javascript">
+       
+    function launch_caller()             
+    {
+        var x = document.getElementById("localuser");
+        WebRTCAVControl.SetUserName(x.elements[0].value);
+        x = document.getElementById("hostname");
+        WebRTCAVControl.Init(x.elements[0].value);
+        x = document.getElementById("remoteuser"); 
+        WebRTCAVControl.Call(x.elements[0].value);        
+    } 
+    function launch_callee()             
+    {
+        var x = document.getElementById("localuser");
+        WebRTCAVControl.SetUserName(x.elements[0].value);
+        x = document.getElementById("hostname");
+        WebRTCAVControl.Init(x.elements[0].value);              
+    }
+    function hangup()             
+    {
+        WebRTCAVControl.Hangup();             
+    }  
+    </script>
+
+</head>
+<body>
+
+    <button type="button" onclick="launch_caller()">make a call</button>
+    <button type="button" onclick="launch_callee()">Wait for Call</button>
+    <button type="button" onclick="hangup()">Hangup</button>
+    <form id="hostname">host name: <input type="text" name="hostname" /></form> 
+    <form id="localuser">local user: <input type="text" name="localusername" /></form>
+    <form id="remoteuser">remote user: <input type="text" name="remoteusername" /><br /></form> 
+-->    <object id="WebRTCAVControl" classid="CLSID:CBE1073D-939A-4CCD-9745-F3EE4E6F9328" style="position:absolute;top=120px;left=100px;width:640px;height:240px;"></object>
+ 
+</body>
+</html>
