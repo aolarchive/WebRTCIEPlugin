@@ -1,4 +1,4 @@
-// WebRTCAVControl.cpp : Implementation of CWebRTCAVControl
+// WebRTCAVControl.cpp : Implementation of TWebRTCAVControl
 #include "stdafx.h"
 #include "TWebRTCAVControl.h"
 #include "peerconnection/samples/client/peer_connection_client.h"
