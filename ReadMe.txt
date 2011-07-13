@@ -1,3 +1,6 @@
+This project uses webrtc sample program as reference, demons how to use webrtc to develop 
+IE plugins for real time audio/video communication.
+
 ========================================================================
     ACTIVE TEMPLATE LIBRARY : WebRTCIEPlugin Project Overview
 ========================================================================
