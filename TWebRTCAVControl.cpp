@@ -1,4 +1,4 @@
-// WebRTCAVControl.cpp : Implementation of TWebRTCAVControl
+// WebRTCAVControl.cpp : Implementation of CWebRTCAVControl
 #include "stdafx.h"
 #include "TWebRTCAVControl.h"
 #include "peerconnection/samples/client/peer_connection_client.h"
@@ -7,6 +7,7 @@
 #include "talk/base/win32window.h"
 #include "talk/session/phone/videocommon.h"
 #include "talk/session/phone/videorendererfactory.h"
+#include "talk/p2p/client/basicportallocator.h"
 
 static const int kDefaultWidth = 320;
 static const int kDefaultHeight = 240;
@@ -141,8 +142,8 @@ void TWebRTCAVControl::FinalRelease()
 STDMETHODIMP TWebRTCAVControl::Init(BSTR host)
 {
     m_hWndContainer = GetHWND();
-    m_peerConnectionClient.Init(this, m_hWndContainer);
-    m_peerConnectionClient.Connect(ToUtf8(host), kDefaultServerPort, m_userName);
+    m_peerConnectionClientWrapper.Init(this, m_hWndContainer);
+    m_peerConnectionClientWrapper.Connect(ToUtf8(host), kDefaultServerPort, m_userName);
     return S_OK;
 }
 
@@ -160,20 +161,20 @@ STDMETHODIMP TWebRTCAVControl::Call(BSTR callee)
 
 STDMETHODIMP TWebRTCAVControl::Hangup()
 {
-    if (m_peerConnectionClient.is_connected())
-        m_peerConnectionClient.SignOut();
+    if (m_peerConnectionClientWrapper.is_connected())
+        m_peerConnectionClientWrapper.SignOut();
     return S_OK;
 }
 
 STDMETHODIMP TWebRTCAVControl::OnSignalingMessage()
 {
-    bool ret = m_peerConnectionClient.SendToPeer();
+    bool ret = m_peerConnectionClientWrapper.SendToPeer();
     return ret ? S_OK : S_FALSE;
 }
 
 STDMETHODIMP TWebRTCAVControl::OnSignedIn()
 {
-    m_peerConnectionClient.Call(m_peerName);
+    m_peerConnectionClientWrapper.Call(m_peerName);
     return S_OK;
 }
 
@@ -181,7 +182,7 @@ HRESULT TWebRTCAVControl::OnDraw(ATL_DRAWINFO& di)
 {
     RECT& rect = *(RECT*)di.prcBounds;
     if (rect.top > 0)
-        m_peerConnectionClient.OnDraw(di);
+        m_peerConnectionClientWrapper.OnDraw(di);
     return S_OK;
 }
 
@@ -204,7 +205,9 @@ HWND TWebRTCAVControl::GetHWND()
 }
 
 TWebRTCAVControl::TPeerConnectionClientWarpper::TPeerConnectionClientWarpper()
-    : m_peerConnection("STUN stun.l.google.com:19302"),
+    : m_pPeerConnection(NULL),
+      m_pPortAllocator(NULL),
+      m_pWorkerThread(NULL),
       m_waiting_for_audio(false),
       m_waiting_for_video(false),
       m_videoInitialized(false),
@@ -217,13 +220,20 @@ TWebRTCAVControl::TPeerConnectionClientWarpper::TPeerConnectionClientWarpper()
     m_peerConnectionClient.RegisterObserver(this);
 }        
 
+TWebRTCAVControl::TPeerConnectionClientWarpper::~TPeerConnectionClientWarpper()
+{
+    delete m_pPeerConnection;
+    delete m_pPortAllocator;
+    delete m_pWorkerThread;
+}
+
 void TWebRTCAVControl::TPeerConnectionClientWarpper::Init(IWebRTCAVControl* piWebRTCAVControl,
                                                           HWND hWndContainer)
 {
     m_spiWebRTCAVControl = piWebRTCAVControl;
     m_hWndContainer = hWndContainer;
     m_videoRenderer.Init(100, 100, kDefaultWidth, kDefaultHeight, hWndContainer);
-    m_previewRenderer.Init(300, 300, kDefaultWidth, kDefaultHeight, hWndContainer);
+    m_previewRenderer.Init(400, 400, kDefaultWidth, kDefaultHeight, hWndContainer);
 }
 
 bool TWebRTCAVControl::TPeerConnectionClientWarpper::Connect(const std::string& server, int port,
@@ -237,7 +247,7 @@ void TWebRTCAVControl::TPeerConnectionClientWarpper::Call(const std::wstring& pe
     m_peerName = peerName;
     if (m_peerName.length())
     {
-        Setup(true);
+        Setup();
     }
 }
 
@@ -259,11 +269,12 @@ bool TWebRTCAVControl::TPeerConnectionClientWarpper::OnDraw(ATL_DRAWINFO& di)
     RECT rectClient;
     ::GetClientRect(m_hWndContainer, &rectClient);
 
+    if(EqualRect(&m_rect, &rectClient))
+        return true;
+
+    CopyRect(&m_rect, &rectClient);
     RECT rect;
     ::CopyRect(&rect, &rectClient);
-
-    if(EqualRect(&m_rect, &rect))
-        return true;
 
     int height = rectClient.bottom;
     int width = rectClient.right;
@@ -271,7 +282,6 @@ bool TWebRTCAVControl::TPeerConnectionClientWarpper::OnDraw(ATL_DRAWINFO& di)
     {
         rect.top = (height - kDefaultHeight) / 2;
         rect.bottom = rect.top + kDefaultHeight;
-        height = kDefaultHeight;
     }
     if (width > kDefaultWidth * 2)
     {
@@ -313,8 +323,29 @@ void TWebRTCAVControl::TPeerConnectionClientWarpper::OnPeerDisconnected(int id, 
 void TWebRTCAVControl::TPeerConnectionClientWarpper::OnMessageFromPeer(int peer_id, const std::string& message) 
 {
     m_peerId = peer_id;
-    Setup(false);
-    m_peerConnection.SignalingMessage(message);
+    Setup();
+    m_pPeerConnection->SignalingMessage(message);
+}
+
+void TWebRTCAVControl::TPeerConnectionClientWarpper::OnInitialized()
+{
+  SendMessage(handle(), INITIALIZED, 0, 0);
+}
+
+void TWebRTCAVControl::TPeerConnectionClientWarpper::OnLocalStreamInitialized(const std::string& stream_id, bool video)
+{
+    if (video)
+    {
+        m_waiting_for_video = false;
+        bool ok = m_pPeerConnection->SetVideoRenderer(stream_id, &m_videoRenderer);
+    } 
+    else 
+    {
+        m_waiting_for_audio = false;
+    }
+
+    if (!m_waiting_for_audio && !m_waiting_for_video)
+        SendMessage(handle(), MEDIA_CHANNELS_INITIALIZED, 0, 0);
 }
 
 void TWebRTCAVControl::TPeerConnectionClientWarpper::OnSignalingMessage(const std::string& msg)
@@ -333,25 +364,20 @@ void TWebRTCAVControl::TPeerConnectionClientWarpper::OnSignalingMessage(const st
     SendMessage(handle(), SEND_MESSAGE_TO_PEER, 0, 0);
 }
 
-void TWebRTCAVControl::TPeerConnectionClientWarpper::OnAddStream(const std::string& stream_id, int channel_id, bool video)
+void TWebRTCAVControl::TPeerConnectionClientWarpper::OnAddStream(const std::string& stream_id, bool video)
 {
     if (video)
     {
         m_waiting_for_video = false;
-        m_peerConnection.SetVideoRenderer(stream_id, &m_videoRenderer);
+        m_pPeerConnection->SetVideoRenderer(stream_id, &m_videoRenderer);
     }
     else
     {
         m_waiting_for_audio = false;
     }
-
-    if (!m_waiting_for_video && !m_waiting_for_audio && m_peerName.length())
-    {
-        SendMessage(handle(), MEDIA_CHANNELS_INITIALIZED, 0, 0);
-    }
 }
 
-void TWebRTCAVControl::TPeerConnectionClientWarpper::OnRemoveStream(const std::string& stream_id, int channel_id, bool video)
+void TWebRTCAVControl::TPeerConnectionClientWarpper::OnRemoveStream(const std::string& stream_id, bool video)
 {
 
 }
@@ -368,6 +394,9 @@ bool TWebRTCAVControl::TPeerConnectionClientWarpper::OnMessage(UINT msg, WPARAM 
     case MEDIA_CHANNELS_INITIALIZED:
         OnMediaChannelsReady();
         break;
+    case INITIALIZED:
+        AddStreams();
+        break;
     default:
         ret = false;
         break;
@@ -381,8 +410,8 @@ HRESULT TWebRTCAVControl::TPeerConnectionClientWarpper::StartVideo()
     if (m_videoInitialized)
         return S_OK;
 
-    m_peerConnection.SetVideoCapture("");
-    m_peerConnection.SetLocalVideoRenderer(&m_previewRenderer);
+    m_pPeerConnection->SetVideoCapture("");
+    m_pPeerConnection->SetLocalVideoRenderer(&m_previewRenderer);
     m_videoInitialized = true;
 
     return S_OK;
@@ -392,28 +421,45 @@ HRESULT TWebRTCAVControl::TPeerConnectionClientWarpper::OnMediaChannelsReady()
 {
     if (m_peerName.length())
     {
-        m_peerConnection.Connect();
+        m_pPeerConnection->Connect();
         StartVideo();
     }
 
     return S_OK;
 }
 
-HRESULT TWebRTCAVControl::TPeerConnectionClientWarpper::Setup(bool all)
+void TWebRTCAVControl::TPeerConnectionClientWarpper::AddStreams() 
+{
+    m_pPeerConnection->AddStream(kVideoLabel, true);
+    m_pPeerConnection->AddStream(kAudioLabel, false);
+    m_waiting_for_audio = m_waiting_for_video = true;
+}
+
+HRESULT TWebRTCAVControl::TPeerConnectionClientWarpper::Setup()
 {
     if (m_initialized)
         return S_OK;
 
-    m_peerConnection.Init();
-    m_peerConnection.RegisterObserver(this);
-    m_peerConnection.SetAudioDevice("", "", 0);
+    m_pPortAllocator = new cricket::BasicPortAllocator(
+        new talk_base::BasicNetworkManager(),
+        talk_base::SocketAddress("stun.l.google.com", 19302),
+        talk_base::SocketAddress(),
+        talk_base::SocketAddress(), talk_base::SocketAddress());
 
-    if (all)
+    m_pWorkerThread = new talk_base::Thread();
+    if (!m_pWorkerThread->SetName("workder thread", this) ||
+        !m_pWorkerThread->Start()) 
+        return E_FAIL;
+
+    m_pPeerConnection = webrtc::PeerConnection::Create(GetPeerConnectionString(), m_pPortAllocator, m_pWorkerThread);
+
+    m_pPeerConnection->RegisterObserver(this);
+    if (m_pPeerConnection->Init())
     {
-        m_peerConnection.AddStream(kVideoLabel, true);
-        m_peerConnection.AddStream(kAudioLabel, false);
-        m_waiting_for_video = m_waiting_for_audio = true;
-        m_initialized = true;
+        m_pPeerConnection->SetAudioDevice("", "", 0);
     }
+        
+    m_initialized = true;
+
     return S_OK;
 }

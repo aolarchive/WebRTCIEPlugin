@@ -18,6 +18,18 @@ import ".\IAVControl.idl";
 	pointer_default(unique)
 ]
 interface IWebRTCAVControl : IAVControl{
+	[propput, bindable, requestedit, id(DISPID_BACKCOLOR)]
+	HRESULT BackColor([in]OLE_COLOR clr);
+	[propget, bindable, requestedit, id(DISPID_BACKCOLOR)]
+	HRESULT BackColor([out,retval]OLE_COLOR* pclr);
+	[propput, bindable, requestedit, id(DISPID_BORDERCOLOR)]
+	HRESULT BorderColor([in]OLE_COLOR clr);
+	[propget, bindable, requestedit, id(DISPID_BORDERCOLOR)]
+	HRESULT BorderColor([out, retval]OLE_COLOR* pclr);
+	[propput, bindable, requestedit, id(DISPID_CAPTION)]
+	HRESULT Caption([in]BSTR strCaption);
+	[propget, bindable, requestedit, id(DISPID_CAPTION)]
+	HRESULT Caption([out,retval]BSTR* pstrCaption);
     HRESULT OnSignalingMessage();
     HRESULT OnSignedIn();
 };

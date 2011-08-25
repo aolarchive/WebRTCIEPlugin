@@ -5,7 +5,7 @@
 #include "WebRTCIEPlugin_i.h"
 #include "_IWebRTCAVControlEvents_CP.h"
 #include <string>
-#include "talk/app/peerconnection.h"
+#include "talk/app/webrtc/peerconnection.h"
 #include "peerconnection/samples/client/conductor.h"
 #include "peerconnection/samples/client/peer_connection_client.h"
 
@@ -160,6 +160,8 @@ private:
     {
     public:
         TPeerConnectionClientWarpper();
+        ~TPeerConnectionClientWarpper();
+
         void Init(IWebRTCAVControl*, HWND);
         void Call(const std::wstring&);
         bool Connect(const std::string& server, int port, const std::wstring& client_name);
@@ -178,11 +180,13 @@ private:
         virtual void OnPeerDisconnected(int id, const std::string& name);
         virtual void OnMessageFromPeer(int peer_id, const std::string& message);
 
-        // webrtc::PeerConnectionObserver 
+        // webrtc::PeerConnectionObserver
+        virtual void OnInitialized();
         virtual void OnError(){};
+        virtual void OnLocalStreamInitialized(const std::string& stream_id, bool video);
         virtual void OnSignalingMessage(const std::string& msg);
-        virtual void OnAddStream(const std::string& stream_id, int channel_id, bool video);
-        virtual void OnRemoveStream(const std::string& stream_id, int channel_id, bool video);
+        virtual void OnAddStream(const std::string& stream_id, bool video);
+        virtual void OnRemoveStream(const std::string& stream_id, bool video);
 
         //
         // Win32Window implementation.
@@ -192,20 +196,25 @@ private:
     private:
         enum WindowMessages {
             SEND_MESSAGE_TO_PEER = WM_APP + 1,
-            MEDIA_CHANNELS_INITIALIZED
+            MEDIA_CHANNELS_INITIALIZED,
+            INITIALIZED
         };
 
     private:
-        HRESULT Setup(bool);
+        HRESULT Setup();
         HRESULT StartVideo();
         HRESULT OnMediaChannelsReady();
+        void AddStreams();
 
     private:
         PeerConnectionClient m_peerConnectionClient;
         std::string m_message;
         CComPtr<IWebRTCAVControl> m_spiWebRTCAVControl;
 
-        webrtc::PeerConnection m_peerConnection;
+        webrtc::PeerConnection* m_pPeerConnection;
+        cricket::PortAllocator* m_pPortAllocator;
+        talk_base::Thread* m_pWorkerThread;
+
         bool m_waiting_for_audio;
         bool m_waiting_for_video;
         bool m_videoInitialized;
@@ -223,7 +232,7 @@ private:
     HWND m_hWndContainer;
     std::wstring m_userName;
     std::wstring m_peerName;
-    TPeerConnectionClientWarpper m_peerConnectionClient;
+    TPeerConnectionClientWarpper m_peerConnectionClientWrapper;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(WebRTCAVControl), TWebRTCAVControl)

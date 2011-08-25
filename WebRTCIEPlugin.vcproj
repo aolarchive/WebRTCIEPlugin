@@ -53,7 +53,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(WEBRTCHOME)\trunk&quot;;&quot;$(WEBRTCHOME)\third_party\libjingle\source&quot;;..\..\external\WebRTC\third_party\libjingle\source;..\common\inc;..\..\external\WebRTC\trunk"
+				AdditionalIncludeDirectories="&quot;$(WEBRTCHOME)\&quot;;&quot;$(WEBRTCHOME)\src\&quot;;&quot;$(WEBRTCHOME)\third_party_mods\libjingle\source&quot;;&quot;$(WEBRTCHOME)\third_party\libjingle\source&quot;;..\common\inc"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -78,9 +78,9 @@
 				Name="VCLinkerTool"
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="pcm16b.lib libjpeg.lib apm_util.lib expat.lib spl.lib webrtc_vplib.lib g711.lib system_wrappers.lib g722.lib libvpx.lib libjingle.lib ilbc.lib cng.lib aecm.lib agc.lib vad.lib isacfix.lib ns.lib isac.lib resampler.lib aec.lib webrtc_jpeg.lib audio_conference_mixer.lib webrtc_i420.lib udp_transport.lib rtp_rtcp.lib webrtc_vp8.lib neteq.lib audio_device.lib audio_processing.lib webrtc_video_coding.lib audio_coding_module.lib webrtc_utility.lib video_processing.lib video_render_module.lib video_capture_module.lib media_file.lib voice_engine_core.lib video_engine_core.lib libjingle_p2p.lib libjingle_app.lib jsoncpp.lib wininet.lib dnsapi.lib version.lib msimg32.lib ws2_32.lib usp10.lib psapi.lib dbghelp.lib winmm.lib shlwapi.lib secur32.lib crypt32.lib iphlpapi.lib secur32.lib crypt32.lib iphlpapi.lib winmm.lib secur32.lib crypt32.lib iphlpapi.lib"
+				AdditionalDependencies="protobuf_lite.lib pcm16b.lib libjpeg.lib apm_util.lib expat.lib spl.lib webrtc_vplib.lib g711.lib system_wrappers.lib g722.lib libvpx.lib libjingle.lib ilbc.lib cng.lib aecm.lib agc.lib vad.lib isacfix.lib ns.lib isac.lib resampler.lib aec.lib webrtc_jpeg.lib audio_conference_mixer.lib webrtc_i420.lib udp_transport.lib rtp_rtcp.lib webrtc_vp8.lib neteq.lib audio_device.lib audio_processing.lib webrtc_video_coding.lib audio_coding_module.lib webrtc_utility.lib video_processing.lib video_render_module.lib video_capture_module.lib media_file.lib voice_engine_core.lib video_engine_core.lib libjingle_p2p.lib libjingle_app.lib jsoncpp.lib wininet.lib dnsapi.lib version.lib msimg32.lib ws2_32.lib usp10.lib psapi.lib dbghelp.lib winmm.lib shlwapi.lib secur32.lib crypt32.lib iphlpapi.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(WEBRTCHOME)\trunk\$(ConfigurationName)\lib&quot;;&quot;..\..\external\WebRTC\trunk\$(ConfigurationName)\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(WEBRTCHOME)\$(ConfigurationName)\lib&quot;"
 				ModuleDefinitionFile=".\WebRTCIEPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -257,18 +257,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\WebRTC\trunk\peerconnection\samples\client\peer_connection_client.cc"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -308,7 +296,7 @@
 				Name="libjingle"
 				>
 				<File
-					RelativePath="..\WebRTC\third_party\libjingle\source\talk\app\p2p_transport_manager.cc"
+					RelativePath="..\WebRTC\trunk\third_party\libjingle\source\talk\base\win32socketinit.cc"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -320,19 +308,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\WebRTC\third_party\libjingle\source\talk\base\win32socketinit.cc"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\WebRTC\third_party\libjingle\source\talk\base\win32socketserver.cc"
+					RelativePath="..\WebRTC\trunk\third_party\libjingle\source\talk\base\win32socketserver.cc"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -359,7 +335,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\WebRTC\trunk\peerconnection\samples\client\peer_connection_client.h"
+				RelativePath="..\..\..\..\WebRTC\trunk\peerconnection\samples\client\peer_connection_client.h"
 				>
 			</File>
 			<File
