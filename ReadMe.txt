@@ -1,5 +1,6 @@
-This project convers webrtc sample app into a plugin for IE to demonstrate how to use webrtc to develop 
-IE plugins for real time audio/video communication.
+This project uses WebRTC's version of sample application named peerconnection to build a video chat plugin for IE.
+Since the publication of this project, WebRTC has gone tremendous development. Developers who are interested
+are welcome to update this project with the latest of WebRTC and libjingle.
 
 ========================================================================
     ACTIVE TEMPLATE LIBRARY : WebRTCIEPlugin Project Overview
